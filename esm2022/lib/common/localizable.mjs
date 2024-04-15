@@ -1,13 +1,12 @@
 export class Localizable {
-    constructor(translateService) {
-        this.translateService = translateService;
+    get locale() {
+        let n = navigator;
+        return n.language || n.userLanguage;
     }
     getString(defaultValue, key, params) {
-        if (!this.translateService)
+        if (!translations)
             return defaultValue;
-        return this.translateService.instant(key, params) || defaultValue;
-    }
-    getStringAsync(key, params) {
-        return this.translateService.get(key, params);
+        let value = translations[this.locale]?.[key] || translations["en-US"]?.[key] || translations["en"]?.[key] || defaultValue;
+        return value.replace("\\n", "\n");
     }
 }

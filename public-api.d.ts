@@ -1,4 +1,3 @@
-export * from "./lib/common/android-strings-translate-loader";
 export * from "./lib/common/base-app-component";
 export * from "./lib/common/localizable";
 export * from "./lib/theme/theme.service";

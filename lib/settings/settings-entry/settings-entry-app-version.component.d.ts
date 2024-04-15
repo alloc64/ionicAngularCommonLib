@@ -1,12 +1,11 @@
 import { OnInit } from "@angular/core";
-import { TranslateService } from "@ngx-translate/core";
 import { Localizable } from "../../common/localizable";
 import * as i0 from "@angular/core";
 export declare class SettingsEntryAppVersionComponent extends Localizable implements OnInit {
     values: string[];
     subtitle: string;
     counter: number;
-    constructor(translateService: TranslateService);
+    constructor();
     ngOnInit(): Promise<void>;
     onClick(): void;
     static ɵfac: i0.ɵɵFactoryDeclaration<SettingsEntryAppVersionComponent, never>;

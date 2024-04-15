@@ -1,50 +1,13 @@
-import { HttpHeaders, HttpClient } from '@angular/common/http';
-import { map } from 'rxjs';
-import * as txml from 'txml/dist/txml';
 import * as i0 from '@angular/core';
 import { Injectable, Component, Directive, Input, Pipe, EventEmitter, Output, NgModule } from '@angular/core';
-import * as i1 from '@ionic/storage-angular';
+import * as i2 from '@ionic/storage-angular';
 import { IonicStorageModule } from '@ionic/storage-angular';
-import * as i1$1 from '@ngx-translate/core';
-import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { Capacitor } from '@capacitor/core';
-import * as i1$2 from '@angular/platform-browser';
 import { TwobidSDK } from '@twobid/ionic-plugin';
-import * as i1$3 from '@ionic/angular';
+import * as i1 from '@ionic/angular';
 import { IonicModule } from '@ionic/angular';
 import * as i3 from '@angular/common';
 import { CommonModule } from '@angular/common';
-
-class AndroidStringsTranslateLoader {
-    constructor(http) {
-        this.http = http;
-    }
-    getTranslation(lang) {
-        let valuesFolder = lang == 'en' ? 'values' : `values-${lang}`;
-        return this.http.get(`/assets/res/${valuesFolder}/strings.xml`, {
-            headers: new HttpHeaders().set('Content-Type', 'text/xml'),
-            responseType: 'text'
-        }).pipe(map((response) => {
-            let result = txml.parse(response);
-            let resources = result?.length > 0 ? result[0] : null;
-            const res = {};
-            if (resources?.children?.length > 0) {
-                resources?.children.forEach((e) => {
-                    if (e.tagName == "string") {
-                        let name = e.attributes["name"];
-                        if (name && e.children?.length > 0) {
-                            let val = e.children[0];
-                            if (val.indexOf("\\n") >= 0)
-                                val = val.replace("\\n", "\n");
-                            res[name] = val;
-                        }
-                    }
-                });
-            }
-            return res;
-        }));
-    }
-}
 
 class ThemeService {
     static { this.THEME = 'theme'; }
@@ -78,35 +41,31 @@ i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "16.2.12", ngImpo
         }] });
 
 class BaseAppComponent {
-    constructor(storage, themeService, translateService) {
+    constructor(storage, themeService) {
         this.storage = storage;
         this.themeService = themeService;
-        this.translateService = translateService;
-        this.translateService.use(this.translateService.getBrowserLang() || "en");
-        this.themeService.use();
     }
     async ngOnInit() {
         await this.storage.create();
     }
-    static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: BaseAppComponent, deps: [{ token: i1.Storage }, { token: ThemeService }, { token: i1$1.TranslateService }], target: i0.ɵɵFactoryTarget.Component }); }
+    static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: BaseAppComponent, deps: [{ token: i2.Storage }, { token: ThemeService }], target: i0.ɵɵFactoryTarget.Component }); }
     static { this.ɵcmp = i0.ɵɵngDeclareComponent({ minVersion: "14.0.0", version: "16.2.12", type: BaseAppComponent, selector: "ng-component", ngImport: i0, template: '', isInline: true }); }
 }
 i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: BaseAppComponent, decorators: [{
             type: Component,
             args: [{ template: '' }]
-        }], ctorParameters: function () { return [{ type: i1.Storage }, { type: ThemeService }, { type: i1$1.TranslateService }]; } });
+        }], ctorParameters: function () { return [{ type: i2.Storage }, { type: ThemeService }]; } });
 
 class Localizable {
-    constructor(translateService) {
-        this.translateService = translateService;
+    get locale() {
+        let n = navigator;
+        return n.language || n.userLanguage;
     }
     getString(defaultValue, key, params) {
-        if (!this.translateService)
+        if (!translations)
             return defaultValue;
-        return this.translateService.instant(key, params) || defaultValue;
-    }
-    getStringAsync(key, params) {
-        return this.translateService.get(key, params);
+        let value = translations[this.locale]?.[key] || translations["en-US"]?.[key] || translations["en"]?.[key] || defaultValue;
+        return value.replace("\\n", "\n");
     }
 }
 
@@ -194,25 +153,13 @@ i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "16.2.12", ngImpo
         }] });
 
 class TranslatePipe extends Localizable {
-    constructor(changeDetectorRef, domSanitizer, translateService) {
-        super(translateService);
-        this.changeDetectorRef = changeDetectorRef;
-        this.domSanitizer = domSanitizer;
-        this.value = "";
+    constructor() {
+        super();
     }
     transform(defaultValue, key, args) {
-        if (!this.value) {
-            if (defaultValue && defaultValue.indexOf("\\n") >= 0)
-                defaultValue = defaultValue.replace("\\n", "\n");
-            this.value = defaultValue;
-            this.getStringAsync(key, args).subscribe((value) => {
-                this.value = value;
-                this.changeDetectorRef.markForCheck();
-            });
-        }
-        return this.value;
+        return this.getString(defaultValue, key, args);
     }
-    static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: TranslatePipe, deps: [{ token: i0.ChangeDetectorRef }, { token: i1$2.DomSanitizer }, { token: i1$1.TranslateService }], target: i0.ɵɵFactoryTarget.Pipe }); }
+    static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: TranslatePipe, deps: [], target: i0.ɵɵFactoryTarget.Pipe }); }
     static { this.ɵpipe = i0.ɵɵngDeclarePipe({ minVersion: "14.0.0", version: "16.2.12", ngImport: i0, type: TranslatePipe, name: "translate" }); }
 }
 i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: TranslatePipe, decorators: [{
@@ -220,7 +167,7 @@ i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "16.2.12", ngImpo
             args: [{
                     name: 'translate'
                 }]
-        }], ctorParameters: function () { return [{ type: i0.ChangeDetectorRef }, { type: i1$2.DomSanitizer }, { type: i1$1.TranslateService }]; } });
+        }], ctorParameters: function () { return []; } });
 
 class SettingsEntryComponent {
     async getSelectedValue() {
@@ -286,7 +233,7 @@ class SettingsEntryComponent {
     change(value) {
         this.onChange.emit(value);
     }
-    static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: SettingsEntryComponent, deps: [{ token: i1$3.AlertController }, { token: i0.NgZone }, { token: i1.Storage }], target: i0.ɵɵFactoryTarget.Component }); }
+    static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: SettingsEntryComponent, deps: [{ token: i1.AlertController }, { token: i0.NgZone }, { token: i2.Storage }], target: i0.ɵɵFactoryTarget.Component }); }
     static { this.ɵcmp = i0.ɵɵngDeclareComponent({ minVersion: "14.0.0", version: "16.2.12", type: SettingsEntryComponent, selector: "settings-entry", inputs: { id: "id", title: "title", subtitle: "subtitle", values: "values", defaultValue: "defaultValue", validator: "validator", valueResolver: "valueResolver" }, outputs: { onClick: "onClick", onChange: "onChange" }, ngImport: i0, template: `
     <ion-item button (click)="onClickEvent($event)">
       <ion-label>
@@ -294,7 +241,7 @@ class SettingsEntryComponent {
         <h3 *ngIf="subtitle">{{ subtitle }}</h3>
       </ion-label>
     </ion-item>
-  `, isInline: true, dependencies: [{ kind: "component", type: i1$3.IonItem, selector: "ion-item", inputs: ["button", "color", "counter", "counterFormatter", "detail", "detailIcon", "disabled", "download", "fill", "href", "lines", "mode", "rel", "routerAnimation", "routerDirection", "shape", "target", "type"] }, { kind: "component", type: i1$3.IonLabel, selector: "ion-label", inputs: ["color", "mode", "position"] }, { kind: "directive", type: i3.NgIf, selector: "[ngIf]", inputs: ["ngIf", "ngIfThen", "ngIfElse"] }] }); }
+  `, isInline: true, dependencies: [{ kind: "component", type: i1.IonItem, selector: "ion-item", inputs: ["button", "color", "counter", "counterFormatter", "detail", "detailIcon", "disabled", "download", "fill", "href", "lines", "mode", "rel", "routerAnimation", "routerDirection", "shape", "target", "type"] }, { kind: "component", type: i1.IonLabel, selector: "ion-label", inputs: ["color", "mode", "position"] }, { kind: "directive", type: i3.NgIf, selector: "[ngIf]", inputs: ["ngIf", "ngIfThen", "ngIfElse"] }] }); }
 }
 i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: SettingsEntryComponent, decorators: [{
             type: Component,
@@ -309,7 +256,7 @@ i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "16.2.12", ngImpo
     </ion-item>
   `
                 }]
-        }], ctorParameters: function () { return [{ type: i1$3.AlertController }, { type: i0.NgZone }, { type: i1.Storage }]; }, propDecorators: { id: [{
+        }], ctorParameters: function () { return [{ type: i1.AlertController }, { type: i0.NgZone }, { type: i2.Storage }]; }, propDecorators: { id: [{
                 type: Input
             }], title: [{
                 type: Input
@@ -330,8 +277,8 @@ i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "16.2.12", ngImpo
             }] } });
 
 class SettingsEntryAppVersionComponent extends Localizable {
-    constructor(translateService) {
-        super(translateService);
+    constructor() {
+        super();
         this.values = [];
         this.subtitle = "N/A";
         this.counter = 0;
@@ -358,7 +305,7 @@ class SettingsEntryAppVersionComponent extends Localizable {
         this.counter = (this.counter + 1) % this.values.length;
         this.subtitle = this.values[this.counter];
     }
-    static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: SettingsEntryAppVersionComponent, deps: [{ token: i1$1.TranslateService }], target: i0.ɵɵFactoryTarget.Component }); }
+    static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: SettingsEntryAppVersionComponent, deps: [], target: i0.ɵɵFactoryTarget.Component }); }
     static { this.ɵcmp = i0.ɵɵngDeclareComponent({ minVersion: "14.0.0", version: "16.2.12", type: SettingsEntryAppVersionComponent, selector: "settings-entry-app-version", usesInheritance: true, ngImport: i0, template: `
     <settings-entry id="version"
                     [title]="'Version' | translate: 'version'"
@@ -377,11 +324,8 @@ i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "16.2.12", ngImpo
                     (onClick)="onClick()"></settings-entry>
   `
                 }]
-        }], ctorParameters: function () { return [{ type: i1$1.TranslateService }]; } });
+        }], ctorParameters: function () { return []; } });
 
-function createTranslateLoader(http) {
-    return new AndroidStringsTranslateLoader(http);
-}
 class Alloc64CommonModule {
     static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: Alloc64CommonModule, deps: [], target: i0.ɵɵFactoryTarget.NgModule }); }
     static { this.ɵmod = i0.ɵɵngDeclareNgModule({ minVersion: "14.0.0", version: "16.2.12", ngImport: i0, type: Alloc64CommonModule, bootstrap: [Alloc64CommonModule], declarations: [BaseAppComponent,
@@ -391,8 +335,8 @@ class Alloc64CommonModule {
             TranslatePipe,
             DefaultImageDirective,
             SettingsEntryComponent,
-            SettingsEntryAppVersionComponent], imports: [TranslateModule, i1$1.TranslateModule, IonicModule,
-            CommonModule, i1$3.IonicModule, i1.IonicStorageModule], exports: [BaseAppComponent,
+            SettingsEntryAppVersionComponent], imports: [IonicModule,
+            CommonModule, i1.IonicModule, i2.IonicStorageModule], exports: [BaseAppComponent,
             DefaultImagePipe,
             FormatFileSizePipe,
             ConvertFileSrcPipe,
@@ -400,17 +344,7 @@ class Alloc64CommonModule {
             DefaultImageDirective,
             SettingsEntryComponent,
             SettingsEntryAppVersionComponent] }); }
-    static { this.ɵinj = i0.ɵɵngDeclareInjector({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: Alloc64CommonModule, imports: [TranslateModule,
-            TranslateModule.forRoot({
-                loader: {
-                    provide: TranslateLoader,
-                    useFactory: (createTranslateLoader),
-                    useClass: AndroidStringsTranslateLoader,
-                    deps: [HttpClient]
-                },
-                defaultLanguage: 'en'
-            }),
-            IonicModule,
+    static { this.ɵinj = i0.ɵɵngDeclareInjector({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: Alloc64CommonModule, imports: [IonicModule,
             CommonModule,
             IonicModule.forRoot(),
             IonicStorageModule.forRoot()] }); }
@@ -429,16 +363,6 @@ i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "16.2.12", ngImpo
                         SettingsEntryAppVersionComponent,
                     ],
                     imports: [
-                        TranslateModule,
-                        TranslateModule.forRoot({
-                            loader: {
-                                provide: TranslateLoader,
-                                useFactory: (createTranslateLoader),
-                                useClass: AndroidStringsTranslateLoader,
-                                deps: [HttpClient]
-                            },
-                            defaultLanguage: 'en'
-                        }),
                         IonicModule,
                         CommonModule,
                         IonicModule.forRoot(),
@@ -468,4 +392,4 @@ i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "16.2.12", ngImpo
  * Generated bundle index. Do not edit.
  */
 
-export { Alloc64CommonModule, AndroidStringsTranslateLoader, BaseAppComponent, ConvertFileSrcPipe, DefaultImageDirective, DefaultImagePipe, FormatFileSizePipe, Localizable, SettingsEntryAppVersionComponent, SettingsEntryComponent, ThemeService, TranslatePipe, createTranslateLoader };
+export { Alloc64CommonModule, BaseAppComponent, ConvertFileSrcPipe, DefaultImageDirective, DefaultImagePipe, FormatFileSizePipe, Localizable, SettingsEntryAppVersionComponent, SettingsEntryComponent, ThemeService, TranslatePipe };
