@@ -57,15 +57,40 @@ i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "16.2.12", ngImpo
         }], ctorParameters: function () { return [{ type: i2.Storage }, { type: ThemeService }]; } });
 
 class Localizable {
-    get locale() {
-        let n = navigator;
-        return n.language || n.userLanguage;
+    static registerTranslations(translations) {
+        for (let locale of Object.keys(translations)) {
+            let splits = locale.split("-");
+            if (splits.length == 2) {
+                const language = splits[0];
+                if (!translations[language])
+                    translations[language] = translations[locale];
+            }
+        }
+        return translations;
     }
     getString(defaultValue, key, params) {
         if (!translations)
             return defaultValue;
-        let value = translations[this.locale]?.[key] || translations["en-US"]?.[key] || translations["en"]?.[key] || defaultValue;
+        let n = navigator;
+        const locale = n.language || n.userLanguage;
+        let value = Localizable.getStringByLocaleFallback(locale, key);
+        if (!value)
+            value = Localizable.getStringByLocaleFallback("en-US", key) || defaultValue;
         return value.replace("\\n", "\n");
+    }
+    /**
+     * all the methods in Localizable must be static or inlined, because somehow the prototype chain is not working
+     * and the methods are not found if used as (super.getString() and so on.)
+     */
+    static getStringByLocaleFallback(locale, key) {
+        if (translations[locale])
+            return translations[locale][key];
+        const splits = locale.split("-");
+        if (splits.length == 2) {
+            const language = splits[0];
+            return translations[language][key];
+        }
+        return undefined;
     }
 }
 
@@ -277,38 +302,42 @@ i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "16.2.12", ngImpo
             }] } });
 
 class SettingsEntryAppVersionComponent extends Localizable {
-    constructor() {
+    constructor(zone) {
         super();
+        this.zone = zone;
         this.values = [];
         this.subtitle = "N/A";
         this.counter = 0;
     }
-    async ngOnInit() {
-        try {
-            if (!TwobidSDK)
-                throw "TwobidSDK instance not found";
-            let v = await TwobidSDK.version();
-            if (!v)
-                throw "TwobidSDK.version() returned null";
+    ngOnInit() {
+        if (!TwobidSDK) {
+            console.error("TwobidSDK is not available");
+            return;
+        }
+        TwobidSDK.version().then((v) => {
+            if (!v) {
+                console.error("TwobidSDK.version() returned null");
+                return;
+            }
             this.values = [
                 v.versionName + " (" + v.versionCode + ")",
                 (v.hdataVersion && v.hdataHash) ? (v.hdataVersion + " (" + v.hdataHash + ")") : "HData N/A",
                 "TwobidSDK: " + v.twobidSdkVersion
             ];
-            this.subtitle = this.values[0];
-        }
-        catch (e) {
-            console.error(e);
-        }
+            this.zone.run(() => {
+                this.subtitle = this.values[0];
+            });
+        });
     }
     onClick() {
         this.counter = (this.counter + 1) % this.values.length;
         this.subtitle = this.values[this.counter];
     }
-    static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: SettingsEntryAppVersionComponent, deps: [], target: i0.ɵɵFactoryTarget.Component }); }
+    static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: SettingsEntryAppVersionComponent, deps: [{ token: i0.NgZone }], target: i0.ɵɵFactoryTarget.Component }); }
     static { this.ɵcmp = i0.ɵɵngDeclareComponent({ minVersion: "14.0.0", version: "16.2.12", type: SettingsEntryAppVersionComponent, selector: "settings-entry-app-version", usesInheritance: true, ngImport: i0, template: `
     <settings-entry id="version"
                     [title]="'Version' | translate: 'version'"
+                    [defaultValue]="subtitle"
                     [subtitle]="subtitle"
                     (onClick)="onClick()"></settings-entry>
   `, isInline: true, dependencies: [{ kind: "component", type: SettingsEntryComponent, selector: "settings-entry", inputs: ["id", "title", "subtitle", "values", "defaultValue", "validator", "valueResolver"], outputs: ["onClick", "onChange"] }, { kind: "pipe", type: TranslatePipe, name: "translate" }] }); }
@@ -320,11 +349,12 @@ i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "16.2.12", ngImpo
                     template: `
     <settings-entry id="version"
                     [title]="'Version' | translate: 'version'"
+                    [defaultValue]="subtitle"
                     [subtitle]="subtitle"
                     (onClick)="onClick()"></settings-entry>
   `
                 }]
-        }], ctorParameters: function () { return []; } });
+        }], ctorParameters: function () { return [{ type: i0.NgZone }]; } });
 
 class Alloc64CommonModule {
     static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: Alloc64CommonModule, deps: [], target: i0.ɵɵFactoryTarget.NgModule }); }
