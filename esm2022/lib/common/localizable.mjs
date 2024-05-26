@@ -10,14 +10,14 @@ export class Localizable {
         }
         return translations;
     }
-    getString(defaultValue, key, params) {
+    getString(key, defaultValue) {
         if (!translations)
-            return defaultValue;
+            return defaultValue || key;
         let n = navigator;
         const locale = n.language || n.userLanguage;
         let value = Localizable.getStringByLocaleFallback(locale, key);
         if (!value)
-            value = Localizable.getStringByLocaleFallback("en-US", key) || defaultValue;
+            value = Localizable.getStringByLocaleFallback("en-US", key) || defaultValue || key;
         return value.replace("\\n", "\n");
     }
     /**

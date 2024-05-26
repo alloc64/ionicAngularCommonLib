@@ -5,8 +5,8 @@ export class TranslatePipe extends Localizable {
     constructor() {
         super();
     }
-    transform(defaultValue, key, args) {
-        return this.getString(defaultValue, key, args);
+    transform(key) {
+        return this.getString(key);
     }
     static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: TranslatePipe, deps: [], target: i0.ɵɵFactoryTarget.Pipe }); }
     static { this.ɵpipe = i0.ɵɵngDeclarePipe({ minVersion: "14.0.0", version: "16.2.12", ngImport: i0, type: TranslatePipe, name: "translate" }); }

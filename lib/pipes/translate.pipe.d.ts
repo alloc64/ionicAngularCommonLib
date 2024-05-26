@@ -3,7 +3,7 @@ import { Localizable } from "../common/localizable";
 import * as i0 from "@angular/core";
 export declare class TranslatePipe extends Localizable implements PipeTransform {
     constructor();
-    transform(defaultValue: string, key: string, args?: string[]): string;
+    transform(key: string): string;
     static ɵfac: i0.ɵɵFactoryDeclaration<TranslatePipe, never>;
     static ɵpipe: i0.ɵɵPipeDeclaration<TranslatePipe, "translate", false>;
 }

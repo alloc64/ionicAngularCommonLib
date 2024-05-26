@@ -39,7 +39,7 @@ export class SettingsEntryAppVersionComponent extends Localizable {
     static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: SettingsEntryAppVersionComponent, deps: [{ token: i0.NgZone }], target: i0.ɵɵFactoryTarget.Component }); }
     static { this.ɵcmp = i0.ɵɵngDeclareComponent({ minVersion: "14.0.0", version: "16.2.12", type: SettingsEntryAppVersionComponent, selector: "settings-entry-app-version", usesInheritance: true, ngImport: i0, template: `
     <settings-entry id="version"
-                    [title]="'Version' | translate: 'version'"
+                    [title]="'version' | translate"
                     [defaultValue]="subtitle"
                     [subtitle]="subtitle"
                     (onClick)="onClick()"></settings-entry>
@@ -51,7 +51,7 @@ i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "16.2.12", ngImpo
                     selector: 'settings-entry-app-version',
                     template: `
     <settings-entry id="version"
-                    [title]="'Version' | translate: 'version'"
+                    [title]="'version' | translate"
                     [defaultValue]="subtitle"
                     [subtitle]="subtitle"
                     (onClick)="onClick()"></settings-entry>

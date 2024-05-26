@@ -68,14 +68,14 @@ class Localizable {
         }
         return translations;
     }
-    getString(defaultValue, key, params) {
+    getString(key, defaultValue) {
         if (!translations)
-            return defaultValue;
+            return defaultValue || key;
         let n = navigator;
         const locale = n.language || n.userLanguage;
         let value = Localizable.getStringByLocaleFallback(locale, key);
         if (!value)
-            value = Localizable.getStringByLocaleFallback("en-US", key) || defaultValue;
+            value = Localizable.getStringByLocaleFallback("en-US", key) || defaultValue || key;
         return value.replace("\\n", "\n");
     }
     /**
@@ -181,8 +181,8 @@ class TranslatePipe extends Localizable {
     constructor() {
         super();
     }
-    transform(defaultValue, key, args) {
-        return this.getString(defaultValue, key, args);
+    transform(key) {
+        return this.getString(key);
     }
     static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: TranslatePipe, deps: [], target: i0.ɵɵFactoryTarget.Pipe }); }
     static { this.ɵpipe = i0.ɵɵngDeclarePipe({ minVersion: "14.0.0", version: "16.2.12", ngImport: i0, type: TranslatePipe, name: "translate" }); }
@@ -336,7 +336,7 @@ class SettingsEntryAppVersionComponent extends Localizable {
     static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "16.2.12", ngImport: i0, type: SettingsEntryAppVersionComponent, deps: [{ token: i0.NgZone }], target: i0.ɵɵFactoryTarget.Component }); }
     static { this.ɵcmp = i0.ɵɵngDeclareComponent({ minVersion: "14.0.0", version: "16.2.12", type: SettingsEntryAppVersionComponent, selector: "settings-entry-app-version", usesInheritance: true, ngImport: i0, template: `
     <settings-entry id="version"
-                    [title]="'Version' | translate: 'version'"
+                    [title]="'version' | translate"
                     [defaultValue]="subtitle"
                     [subtitle]="subtitle"
                     (onClick)="onClick()"></settings-entry>
@@ -348,7 +348,7 @@ i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "16.2.12", ngImpo
                     selector: 'settings-entry-app-version',
                     template: `
     <settings-entry id="version"
-                    [title]="'Version' | translate: 'version'"
+                    [title]="'version' | translate"
                     [defaultValue]="subtitle"
                     [subtitle]="subtitle"
                     (onClick)="onClick()"></settings-entry>
